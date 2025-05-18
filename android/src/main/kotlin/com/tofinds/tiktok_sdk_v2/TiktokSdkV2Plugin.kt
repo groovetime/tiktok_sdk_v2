@@ -60,6 +60,11 @@ class TiktokSdkV2Plugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
           result.error("INVALID_CLIENT_KEY", "Call setup() first.", null)
           return
         }
+
+        if (!::authApi.isInitialized) {
+          result.error("API_UNINITIALIZED", "Call setup() first.", null)
+          return
+        }
         
         val scope = call.argument<String>("scope")
         val state = call.argument<String>("state")
@@ -121,23 +126,25 @@ class TiktokSdkV2Plugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
   }
 
   override fun onNewIntent(intent: Intent): Boolean {
-    authApi.getAuthResponseFromIntent(intent, redirectUrl = redirectUrl)?.let {
-      val authCode = it.authCode
-      if (authCode.isNotEmpty()) {
-        var resultMap = mapOf(
-          "authCode" to authCode,
-          "state" to it.state,
-          "grantedPermissions" to it.grantedPermissions,
-          "codeVerifier" to codeVerifier
-        )
-        loginResult?.success(resultMap)
-      } else {
-        // Returns an error if authentication fails
-        loginResult?.error(
-          it.errorCode.toString(),
-          it.errorMsg,
-          null,
-        )
+    if (::authApi.isInitialized) {
+      authApi.getAuthResponseFromIntent(intent, redirectUrl = redirectUrl)?.let {
+        val authCode = it.authCode
+        if (authCode.isNotEmpty()) {
+          var resultMap = mapOf(
+            "authCode" to authCode,
+            "state" to it.state,
+            "grantedPermissions" to it.grantedPermissions,
+            "codeVerifier" to codeVerifier
+          )
+          loginResult?.success(resultMap)
+        } else {
+          // Returns an error if authentication fails
+          loginResult?.error(
+            it.errorCode.toString(),
+            it.errorMsg,
+            null,
+          )
+        }
       }
     }
     return true
