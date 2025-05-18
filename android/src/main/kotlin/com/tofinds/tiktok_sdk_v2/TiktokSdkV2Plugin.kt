@@ -56,6 +56,11 @@ class TiktokSdkV2Plugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
         result.success(null)
       }
       "login" -> {
+        if (clientKey == null) {
+          result.error("INVALID_CLIENT_KEY", "Call setup() first.", null)
+          return
+        }
+        
         val scope = call.argument<String>("scope")
         val state = call.argument<String>("state")
         redirectUrl = call.argument<String>("redirectUri") ?: ""
