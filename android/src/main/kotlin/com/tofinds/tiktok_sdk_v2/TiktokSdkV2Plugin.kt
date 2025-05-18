@@ -64,7 +64,7 @@ class TiktokSdkV2Plugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
         val scope = call.argument<String>("scope")
         val state = call.argument<String>("state")
         redirectUrl = call.argument<String>("redirectUri") ?: ""
-        var browserAuthEnabled = call.argument<Boolean>("browserAuthEnabled")
+        var browserAuthEnabled = call.argument<Boolean>("browserAuthEnabled") ?: true
 
 
         codeVerifier = PKCEUtils.generateCodeVerifier()
@@ -76,12 +76,11 @@ class TiktokSdkV2Plugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
           state = state,
           codeVerifier = codeVerifier,
         )
-//        val authType = if (browserAuthEnabled == true) {
-//          AuthApi.AuthMethod.ChromeTab
-//        } else {
-//          AuthApi.AuthMethod.TikTokApp
-//        }
-        var authType = AuthApi.AuthMethod.ChromeTab
+        val authType = if (browserAuthEnabled) {
+          AuthApi.AuthMethod.ChromeTab
+        } else {
+          AuthApi.AuthMethod.TikTokApp
+        }
         authApi.authorize(request, authType)
         loginResult = result
       }
